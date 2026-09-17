@@ -251,23 +251,24 @@ export default function Home() {
         />
       )}
 
-      {/* Simplified Acre&Key Footer */}
-      <footer className="w-full bg-[#1F2B38] text-[#F7F3EC] border-t border-[#B88E52]/40 py-6 mt-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
+      {/* Refined Acre&Key Footer (STEP 12: 70-90px height) */}
+      <footer className="w-full bg-[#1F2B38] text-[#F7F3EC] border-t border-[#B88E52]/30 py-5 mt-8">
+        <div className="w-full max-w-[1380px] mx-auto px-6 sm:px-8 lg:px-10 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
             <span className="font-serif font-bold text-lg text-[#F7F3EC] tracking-wider">
               acre<span className="text-[#B88E52]">&amp;</span>key
             </span>
-            <span className="text-xs text-[#A0AEC0] border-l border-[#B88E52]/40 pl-4 font-medium">
-              3D STUDIO — Real Plans. Real Perspectives.
+            <span className="font-sans font-medium text-xs tracking-widest text-[#B88E52] uppercase border-l border-[#B88E52]/40 pl-3">
+              3D STUDIO
             </span>
           </div>
 
-          <p className="text-xs text-[#A0AEC0] italic font-serif">
-            A smarter way to visualise homes.
+          <p className="text-xs text-[#A0AEC0] font-medium tracking-wide">
+            Real Plans. Real Perspectives.
           </p>
         </div>
       </footer>
     </div>
   );
 }
+

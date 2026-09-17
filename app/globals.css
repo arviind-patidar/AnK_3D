@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Inter:wght@300;400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -5,17 +7,23 @@
 :root {
   --navy: #1F2B38;
   --brass: #B88E52;
+  --brass-hover: #A37B43;
   --ivory: #F7F3EC;
+  --bg-page: #FAF8F5;
+  --card-border: #E5D9C5;
+  --font-serif: 'Cinzel', 'Georgia', serif;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 body {
   background-color: #FAF8F5;
   color: #1F2B38;
-  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
 }
 
-h1, h2, h3, .font-serif {
-  font-family: var(--font-cinzel), 'Georgia', serif;
+h1, h2, h3, h4, .font-serif {
+  font-family: var(--font-serif);
 }
 
 /* Custom Scrollbar styling */
@@ -37,3 +45,4 @@ h1, h2, h3, .font-serif {
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #D4AF77;
 }
+
