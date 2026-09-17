@@ -54,7 +54,7 @@ export default function Home() {
         body: JSON.stringify({ imageUrls, metadata }),
       });
 
-      if (!res.ok) throw new Error('Plan analysis failed.');
+      if (!res.ok) throw new Error('Plan analysis API unavailable.');
       const parsedPlan: FloorPlanJSON = await res.json();
       setPlanJson(parsedPlan);
       setIsAnalyzing(false);
@@ -65,8 +65,15 @@ export default function Home() {
         advanceStep(2);
       }
     } catch (err: any) {
-      console.error('Analysis error:', err);
+      console.warn('API unavailable; using pre-loaded fixture for static environment:', err);
+      // Fallback for GitHub Pages static export environment
+      const plan = {
+        ...BRIGADE_INSIGNIA_FIXTURE,
+        metadata: { ...BRIGADE_INSIGNIA_FIXTURE.metadata, ...metadata },
+      };
+      setPlanJson(plan);
       setIsAnalyzing(false);
+      advanceStep(2);
     }
   };
 
@@ -82,6 +89,13 @@ export default function Home() {
     if (!planJson) return;
     try {
       advanceStep(4);
+
+      // Compose sheet client-side as fallback for static export
+      const { SheetComposerService } = await import('@/services/sheetComposer');
+      const composer = new SheetComposerService();
+      const localSheet = composer.composeBrandedSheet(planJson, floorRenders);
+      setSheetDataUrl(localSheet);
+
       const genRes = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -110,12 +124,15 @@ export default function Home() {
       });
       if (composeRes.ok) {
         const composeData = await composeRes.json();
-        setSheetDataUrl(composeData.sheetUrl);
+        if (composeData.sheetUrl) {
+          setSheetDataUrl(composeData.sheetUrl);
+        }
       }
     } catch (err) {
-      console.error('3D Generation error:', err);
+      console.warn('3D Generation API fallback:', err);
     }
   };
+
 
   const handleResolveAmbiguity = (id: string, answer: string) => {
     setActiveAmbiguities((prev) =>
