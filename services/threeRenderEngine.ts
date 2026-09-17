@@ -11,12 +11,14 @@ export class ThreeRenderEngine {
   private height: number;
 
   constructor(options: ThreeRenderOptions = {}) {
-    this.width = options.width || 2048;
-    this.height = options.height || 1536;
+    this.width = options.width || 1600;
+    this.height = options.height || 1200;
   }
 
   /**
-   * Generates a premium 3D Three.js architectural dollhouse scene, auto-fits camera, and exports high-res PNG
+   * Generates a luxury 3D Three.js architectural dollhouse scene matching Image 2 target,
+   * auto-fits top-down orthographic cutaway camera, overlays room code badges directly on top of 3D render,
+   * and exports high-res PNG data URL.
    */
   public async renderFloorToPNG(floorData: FloorData): Promise<{
     pngDataUrl: string;
@@ -36,72 +38,92 @@ export class ThreeRenderEngine {
     renderer.setSize(this.width, this.height);
     renderer.setPixelRatio(1);
     renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFShadowMap;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.15;
+    renderer.toneMappingExposure = 1.25;
 
-    // 2. Create Scene & Warm Neutral Background
+    // 2. Create Scene & Warm Background
     const scene = new THREE.Scene();
     scene.background = new THREE.Color('#FAF8F5');
 
-    // 3. Materials Registry (Premium Neutral Palette)
+    // 3. Materials Registry (Luxury Real-Estate Architectural Palette matching Image 2)
     const wallInnerMat = new THREE.MeshStandardMaterial({
-      color: 0xf7f4ef, // Warm Ivory
-      roughness: 0.85,
+      color: 0xf8f6f0, // Crisp warm alabaster
+      roughness: 0.75,
     });
     const wallCapMat = new THREE.MeshStandardMaterial({
-      color: 0xd6cfbf, // Soft warm stone cap
-      roughness: 0.6,
+      color: 0x343a40, // Dark slate grey top wall cap
+      roughness: 0.4,
     });
     const woodFloorMat = new THREE.MeshStandardMaterial({
-      color: 0xc8a882, // Warm Oak
+      color: 0xc4a27b, // Warm Honey Oak
       roughness: 0.35,
       metalness: 0.02,
     });
     const tileFloorMat = new THREE.MeshStandardMaterial({
-      color: 0xf3efe8, // Light Porcelain Stone
+      color: 0xebe7df, // Light Polish Porcelain / Marble
       roughness: 0.2,
       metalness: 0.01,
     });
+    const bathTileFloorMat = new THREE.MeshStandardMaterial({
+      color: 0xf2f0eb, // Soft white ceramic
+      roughness: 0.25,
+    });
     const balconyFloorMat = new THREE.MeshStandardMaterial({
-      color: 0xd5cdc0, // Light Exterior Stone
-      roughness: 0.7,
+      color: 0x8a6343, // Teak Outdoor Decking Wood
+      roughness: 0.5,
+    });
+    const plantFoliageMat = new THREE.MeshStandardMaterial({
+      color: 0x2e6f40, // Lush Green Balcony Planter Foliage
+      roughness: 0.8,
+    });
+    const plantPotMat = new THREE.MeshStandardMaterial({
+      color: 0x4a4e52, // Dark Charcoal Planter Box
+      roughness: 0.6,
     });
     const furnitureWoodMat = new THREE.MeshStandardMaterial({
-      color: 0x9b8574, // Natural Warm Walnut/Oak
+      color: 0x5c4838, // Natural Warm Walnut/Oak
       roughness: 0.45,
     });
     const furnitureFabricMat = new THREE.MeshStandardMaterial({
-      color: 0xe6e0d4, // Soft Beige/Taupe Upholstery
+      color: 0xf0ede6, // Soft Off-white / Cream Upholstery
+      roughness: 0.8,
+    });
+    const duvetMat = new THREE.MeshStandardMaterial({
+      color: 0xffffff, // Crisp White Duvet
+      roughness: 0.9,
+    });
+    const pillowMat = new THREE.MeshStandardMaterial({
+      color: 0xf5f3ee,
       roughness: 0.85,
     });
     const accentBrassMat = new THREE.MeshStandardMaterial({
       color: 0xb88e52, // Antique Brass
-      metalness: 0.65,
-      roughness: 0.3,
+      metalness: 0.7,
+      roughness: 0.25,
     });
     const glassMat = new THREE.MeshPhysicalMaterial({
-      color: 0xffffff,
+      color: 0xa8d8ff,
       transparent: true,
       opacity: 0.35,
       roughness: 0.1,
-      transmission: 0.9,
+      transmission: 0.85,
     });
 
     // Group to hold all 3D floor objects
     const floorGroup = new THREE.Group();
     scene.add(floorGroup);
 
-    // Coordinate Mapping: Normalized [0..1] -> 3D Space (X: [-12..12], Z: [-10..10])
+    // Coordinate Mapping: Normalized [0..1] -> 3D Space (X: [-14..14], Z: [-12..12])
     const mapTo3D = (px: number, py: number) => {
-      const x = (px - 0.5) * 24;
-      const z = (py - 0.5) * 20;
+      const x = (px - 0.5) * 28;
+      const z = (py - 0.5) * 24;
       return { x, z };
     };
 
-    const roomCentroids: { code: string; screenX: number; screenY: number }[] = [];
+    const centroid3DPositions: { code: string; x: number; z: number }[] = [];
 
-    // 4. Build 3D Floor Slabs & Extruded Walls
+    // 4. Build 3D Floor Slabs & Extruded Cutaway Walls
     floorData.rooms.forEach((room) => {
       if (!room.polygon || room.polygon.length < 3) return;
 
@@ -116,7 +138,9 @@ export class ThreeRenderEngine {
       const floorMat =
         room.type === 'balcony' || room.type === 'standing_balcony'
           ? balconyFloorMat
-          : room.type === 'toilet' || room.type === 'kitchen' || room.type === 'powder'
+          : room.type === 'toilet' || room.type === 'powder'
+          ? bathTileFloorMat
+          : room.type === 'kitchen' || room.type === 'utility'
           ? tileFloorMat
           : woodFloorMat;
 
@@ -127,6 +151,35 @@ export class ThreeRenderEngine {
       floorMesh.receiveShadow = true;
       floorGroup.add(floorMesh);
 
+      // Add Balcony Deck Plank Details & Green Planter Boxes along balcony edge
+      if (room.type === 'balcony' || room.type === 'standing_balcony') {
+        let bx = 0;
+        let bz = 0;
+        room.polygon.forEach(([px, py]) => {
+          const p3d = mapTo3D(px, py);
+          bx += p3d.x;
+          bz += p3d.z;
+        });
+        bx /= room.polygon.length;
+        bz /= room.polygon.length;
+
+        // Add Green Balcony Planter Box & Foliage
+        const potGeo = new THREE.BoxGeometry(1.6, 0.4, 0.4);
+        const potMesh = new THREE.Mesh(potGeo, plantPotMat);
+        potMesh.position.set(bx, 0.2, bz - 0.6);
+        potMesh.castShadow = true;
+        floorGroup.add(potMesh);
+
+        // Lush Leaf Spheres
+        [-0.5, 0, 0.5].forEach((lx) => {
+          const leafGeo = new THREE.SphereGeometry(0.35, 8, 8);
+          const leafMesh = new THREE.Mesh(leafGeo, plantFoliageMat);
+          leafMesh.position.set(bx + lx, 0.5, bz - 0.6);
+          leafMesh.castShadow = true;
+          floorGroup.add(leafMesh);
+        });
+      }
+
       // Cutaway Walls (Height = 1.4m for optimal interior visibility)
       if (room.type !== 'void') {
         const wallHeight = 1.4;
@@ -134,8 +187,8 @@ export class ThreeRenderEngine {
           steps: 1,
           depth: wallHeight,
           bevelEnabled: true,
-          bevelThickness: 0.04,
-          bevelSize: 0.04,
+          bevelThickness: 0.05,
+          bevelSize: 0.05,
           bevelSegments: 2,
         };
 
@@ -148,7 +201,7 @@ export class ThreeRenderEngine {
         floorGroup.add(wallMesh);
       }
 
-      // Calculate Centroid
+      // Calculate Centroid in 3D Space
       let cx = 0;
       let cz = 0;
       room.polygon.forEach(([px, py]) => {
@@ -159,76 +212,106 @@ export class ThreeRenderEngine {
       cx /= room.polygon.length;
       cz /= room.polygon.length;
 
-      // 5. Build Recognizable Low-Poly Furniture Compounds
+      if (room.code && room.type !== 'void') {
+        centroid3DPositions.push({ code: room.code, x: cx, z: cz });
+      }
+
+      // 5. Build High-Fidelity 3D Furniture Models
       room.furniture.forEach((f) => {
         const fPos = mapTo3D(f.position[0], f.position[1]);
 
         if (f.type === 'bed') {
           const bedGroup = new THREE.Group();
-          // Headboard
-          const hbGeo = new THREE.BoxGeometry(2.0, 1.2, 0.15);
+
+          // Wooden Headboard
+          const hbGeo = new THREE.BoxGeometry(2.2, 1.2, 0.15);
           const hbMesh = new THREE.Mesh(hbGeo, furnitureWoodMat);
-          hbMesh.position.set(0, 0.6, -1.0);
+          hbMesh.position.set(0, 0.6, -1.1);
           hbMesh.castShadow = true;
           bedGroup.add(hbMesh);
 
-          // Mattress & Duvet
-          const matGeo = new THREE.BoxGeometry(1.9, 0.35, 2.0);
-          const matMesh = new THREE.Mesh(matGeo, furnitureFabricMat);
-          matMesh.position.set(0, 0.25, 0.0);
+          // Base Frame
+          const baseGeo = new THREE.BoxGeometry(2.0, 0.3, 2.1);
+          const baseMesh = new THREE.Mesh(baseGeo, furnitureWoodMat);
+          baseMesh.position.set(0, 0.15, 0.0);
+          baseMesh.castShadow = true;
+          bedGroup.add(baseMesh);
+
+          // Crisp White Duvet / Mattress
+          const matGeo = new THREE.BoxGeometry(1.95, 0.35, 2.0);
+          const matMesh = new THREE.Mesh(matGeo, duvetMat);
+          matMesh.position.set(0, 0.35, 0.0);
           matMesh.castShadow = true;
           bedGroup.add(matMesh);
 
-          // Pillows
-          const pilGeo = new THREE.BoxGeometry(0.7, 0.12, 0.45);
+          // Grey Bed Runner
+          const runnerGeo = new THREE.BoxGeometry(1.97, 0.02, 0.6);
+          const runnerMesh = new THREE.Mesh(runnerGeo, furnitureWoodMat);
+          runnerMesh.position.set(0, 0.53, 0.6);
+          bedGroup.add(runnerMesh);
+
+          // Double Pillows
+          const pilGeo = new THREE.BoxGeometry(0.75, 0.14, 0.45);
           [-0.5, 0.5].forEach((px) => {
-            const pillow = new THREE.Mesh(pilGeo, furnitureFabricMat);
-            pillow.position.set(px, 0.48, -0.7);
+            const pillow = new THREE.Mesh(pilGeo, pillowMat);
+            pillow.position.set(px, 0.55, -0.7);
+            pillow.castShadow = true;
             bedGroup.add(pillow);
           });
 
           // Nightstands with Brass Lamps
-          const nsGeo = new THREE.BoxGeometry(0.5, 0.5, 0.5);
-          [-1.3, 1.3].forEach((nx) => {
+          const nsGeo = new THREE.BoxGeometry(0.55, 0.5, 0.5);
+          [-1.35, 1.35].forEach((nx) => {
             const ns = new THREE.Mesh(nsGeo, furnitureWoodMat);
             ns.position.set(nx, 0.25, -0.9);
             ns.castShadow = true;
             bedGroup.add(ns);
 
-            const lampBase = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.12, 0.25), accentBrassMat);
-            lampBase.position.set(nx, 0.62, -0.9);
+            const lampBase = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.12, 0.3), accentBrassMat);
+            lampBase.position.set(nx, 0.65, -0.9);
             bedGroup.add(lampBase);
+
+            const shade = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.25, 0.25), furnitureFabricMat);
+            shade.position.set(nx, 0.85, -0.9);
+            bedGroup.add(shade);
           });
 
           bedGroup.position.set(fPos.x, 0, fPos.z);
           floorGroup.add(bedGroup);
         } else if (f.type === 'sofa') {
           const sofaGroup = new THREE.Group();
+
+          // Plush Area Rug under sofa
+          const rugGeo = new THREE.BoxGeometry(3.2, 0.02, 2.6);
+          const rugMesh = new THREE.Mesh(rugGeo, furnitureFabricMat);
+          rugMesh.position.set(0, 0.01, 0.5);
+          sofaGroup.add(rugMesh);
+
           // Main Sectional Base
-          const sbGeo = new THREE.BoxGeometry(2.5, 0.45, 0.9);
+          const sbGeo = new THREE.BoxGeometry(2.6, 0.45, 0.9);
           const sbMesh = new THREE.Mesh(sbGeo, furnitureFabricMat);
-          sbMesh.position.set(0, 0.22, 0);
+          sbMesh.position.set(0, 0.225, 0);
           sbMesh.castShadow = true;
           sofaGroup.add(sbMesh);
 
           // Backrest
-          const brGeo = new THREE.BoxGeometry(2.5, 0.45, 0.2);
+          const brGeo = new THREE.BoxGeometry(2.6, 0.45, 0.25);
           const brMesh = new THREE.Mesh(brGeo, furnitureFabricMat);
-          brMesh.position.set(0, 0.62, -0.35);
+          brMesh.position.set(0, 0.65, -0.325);
           brMesh.castShadow = true;
           sofaGroup.add(brMesh);
 
           // Chaise Extension
-          const chGeo = new THREE.BoxGeometry(0.9, 0.45, 1.3);
+          const chGeo = new THREE.BoxGeometry(0.95, 0.45, 1.4);
           const chMesh = new THREE.Mesh(chGeo, furnitureFabricMat);
-          chMesh.position.set(0.8, 0.22, 0.8);
+          chMesh.position.set(0.825, 0.225, 0.85);
           chMesh.castShadow = true;
           sofaGroup.add(chMesh);
 
-          // Coffee Table
-          const ctGeo = new THREE.BoxGeometry(1.2, 0.35, 0.7);
-          const ctMesh = new THREE.Mesh(ctGeo, accentBrassMat);
-          ctMesh.position.set(0, 0.175, 1.1);
+          // Wood Coffee Table
+          const ctGeo = new THREE.BoxGeometry(1.3, 0.35, 0.75);
+          const ctMesh = new THREE.Mesh(ctGeo, furnitureWoodMat);
+          ctMesh.position.set(-0.2, 0.175, 1.0);
           ctMesh.castShadow = true;
           sofaGroup.add(ctMesh);
 
@@ -236,17 +319,18 @@ export class ThreeRenderEngine {
           floorGroup.add(sofaGroup);
         } else if (f.type === 'dining_table') {
           const dtGroup = new THREE.Group();
-          // Table Top
-          const ttGeo = new THREE.BoxGeometry(2.2, 0.1, 1.1);
+
+          // Polished Wood Table Top
+          const ttGeo = new THREE.BoxGeometry(2.4, 0.1, 1.2);
           const ttMesh = new THREE.Mesh(ttGeo, furnitureWoodMat);
           ttMesh.position.set(0, 0.75, 0);
           ttMesh.castShadow = true;
           dtGroup.add(ttMesh);
 
-          // Table Legs
+          // Brass Table Legs
           const legGeo = new THREE.CylinderGeometry(0.05, 0.05, 0.7);
-          [-0.9, 0.9].forEach((lx) => {
-            [-0.4, 0.4].forEach((lz) => {
+          [-1.0, 1.0].forEach((lx) => {
+            [-0.45, 0.45].forEach((lz) => {
               const leg = new THREE.Mesh(legGeo, accentBrassMat);
               leg.position.set(lx, 0.35, lz);
               leg.castShadow = true;
@@ -254,10 +338,10 @@ export class ThreeRenderEngine {
             });
           });
 
-          // 6 Chairs
-          const chairGeo = new THREE.BoxGeometry(0.4, 0.45, 0.4);
-          [-0.7, 0, 0.7].forEach((cx) => {
-            [-0.75, 0.75].forEach((cz) => {
+          // 6 Upholstered Chairs
+          const chairGeo = new THREE.BoxGeometry(0.45, 0.45, 0.45);
+          [-0.8, 0, 0.8].forEach((cx) => {
+            [-0.8, 0.8].forEach((cz) => {
               const chair = new THREE.Mesh(chairGeo, furnitureFabricMat);
               chair.position.set(cx, 0.225, cz);
               chair.castShadow = true;
@@ -268,28 +352,37 @@ export class ThreeRenderEngine {
           dtGroup.position.set(fPos.x, 0, fPos.z);
           floorGroup.add(dtGroup);
         } else if (f.type === 'counter') {
-          const counterGeo = new THREE.BoxGeometry(2.2, 0.85, 0.65);
+          const counterGeo = new THREE.BoxGeometry(2.4, 0.85, 0.7);
           const counter = new THREE.Mesh(counterGeo, tileFloorMat);
           counter.position.set(fPos.x, 0.425, fPos.z);
           counter.castShadow = true;
           floorGroup.add(counter);
         } else if (f.type === 'sanitary') {
           const bathGroup = new THREE.Group();
+
           // Vanity Counter
-          const vGeo = new THREE.BoxGeometry(1.4, 0.85, 0.6);
-          const vMesh = new THREE.Mesh(vGeo, tileFloorMat);
+          const vGeo = new THREE.BoxGeometry(1.5, 0.85, 0.6);
+          const vMesh = new THREE.Mesh(vGeo, bathTileFloorMat);
           vMesh.position.set(0, 0.425, 0);
           vMesh.castShadow = true;
           bathGroup.add(vMesh);
 
-          // Glass Shower Box
-          const sGeo = new THREE.BoxGeometry(1.1, 1.8, 1.1);
+          // Glass Shower Cubicle with Chrome Trim
+          const sGeo = new THREE.BoxGeometry(1.2, 1.8, 1.2);
           const sMesh = new THREE.Mesh(sGeo, glassMat);
           sMesh.position.set(1.4, 0.9, 0);
           bathGroup.add(sMesh);
 
           bathGroup.position.set(fPos.x, 0, fPos.z);
           floorGroup.add(bathGroup);
+        } else if (f.type === 'lounger') {
+          const deckGroup = new THREE.Group();
+          const chair = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.4, 0.7), furnitureWoodMat);
+          chair.position.set(0, 0.2, 0);
+          chair.castShadow = true;
+          deckGroup.add(chair);
+          deckGroup.position.set(fPos.x, 0, fPos.z);
+          floorGroup.add(deckGroup);
         }
       });
     });
@@ -308,8 +401,8 @@ export class ThreeRenderEngine {
         const stepZ = p1.z + (p2.z - p1.z) * stepRatio;
         const stepY = (s / stepsCount) * 1.4;
 
-        const stepGeo = new THREE.BoxGeometry(1.2, 0.14, 0.35);
-        const stepMesh = new THREE.Mesh(stepGeo, accentBrassMat);
+        const stepGeo = new THREE.BoxGeometry(1.3, 0.14, 0.38);
+        const stepMesh = new THREE.Mesh(stepGeo, woodFloorMat);
         stepMesh.position.set(stepX, stepY + 0.07, stepZ);
         stepMesh.castShadow = true;
         floorGroup.add(stepMesh);
@@ -317,7 +410,7 @@ export class ThreeRenderEngine {
     });
 
     // 7. Ground Shadow Plane
-    const groundGeo = new THREE.PlaneGeometry(80, 80);
+    const groundGeo = new THREE.PlaneGeometry(100, 100);
     const groundMat = new THREE.MeshStandardMaterial({ color: 0xfaf8f5, roughness: 0.9 });
     const ground = new THREE.Mesh(groundGeo, groundMat);
     ground.rotation.x = -Math.PI / 2;
@@ -325,22 +418,22 @@ export class ThreeRenderEngine {
     ground.receiveShadow = true;
     scene.add(ground);
 
-    // 8. Architectural Lighting
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
+    // 8. Architectural Lighting (Warm Sunlight & Sky Light)
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.9);
     scene.add(ambientLight);
 
-    const hemiLight = new THREE.HemisphereLight(0xffffff, 0xe8e4dd, 0.7);
+    const hemiLight = new THREE.HemisphereLight(0xffffff, 0xe2ded4, 0.75);
     hemiLight.position.set(0, 50, 0);
     scene.add(hemiLight);
 
-    const dirLight = new THREE.DirectionalLight(0xfffdf8, 1.5);
-    dirLight.position.set(20, 35, 15);
+    const dirLight = new THREE.DirectionalLight(0xfffdf5, 1.6);
+    dirLight.position.set(25, 45, 20);
     dirLight.castShadow = true;
     dirLight.shadow.mapSize.width = 2048;
     dirLight.shadow.mapSize.height = 2048;
     dirLight.shadow.camera.near = 0.5;
-    dirLight.shadow.camera.far = 90;
-    const shadowD = 22;
+    dirLight.shadow.camera.far = 100;
+    const shadowD = 26;
     dirLight.shadow.camera.left = -shadowD;
     dirLight.shadow.camera.right = shadowD;
     dirLight.shadow.camera.top = shadowD;
@@ -348,20 +441,18 @@ export class ThreeRenderEngine {
     dirLight.shadow.bias = -0.0005;
     scene.add(dirLight);
 
-    // 9. CRITICAL STEP 10: AUTO-FIT CAMERA TO 3D MODEL BOUNDING BOX (85-92% OCCUPANCY)
+    // 9. TOP-DOWN CUTAWAY ORTHOGRAPHIC CAMERA (Matching Image 2 Angle!)
     const bbox = new THREE.Box3().setFromObject(floorGroup);
     const bboxSize = new THREE.Vector3();
     const bboxCenter = new THREE.Vector3();
     bbox.getSize(bboxSize);
     bbox.getCenter(bboxCenter);
 
-    // Position camera target at model centroid
     const maxDim = Math.max(bboxSize.x, bboxSize.z);
     const aspect = this.width / this.height;
 
-    // Add only 10% padding so model fills 85-90% of frame!
-    const paddingMultiplier = 0.58;
-    const orthoH = maxDim * paddingMultiplier;
+    // Tight padding so 3D dollhouse model fills frame cleanly
+    const orthoH = maxDim * 0.56;
     const orthoW = orthoH * aspect;
 
     const camera = new THREE.OrthographicCamera(
@@ -373,15 +464,65 @@ export class ThreeRenderEngine {
       1000
     );
 
-    // Position camera at 45-degree angle offset from model center
-    camera.position.set(bboxCenter.x + 20, bboxCenter.y + 24, bboxCenter.z + 20);
-    camera.lookAt(bboxCenter);
+    // Position camera at 60-degree top-down cutaway angle looking directly down at model
+    camera.position.set(bboxCenter.x, bboxCenter.y + 36, bboxCenter.z + 20);
+    camera.lookAt(bboxCenter.x, 0, bboxCenter.z);
 
-    // 10. Render Scene to WebGL Canvas
+    // 10. Render 3D Scene to WebGL Canvas
     renderer.render(scene, camera);
 
-    // 11. Extract High-Res PNG Data URL
-    const pngDataUrl = renderer.domElement.toDataURL('image/png');
+    // 11. OVERLAY ROOM CODE BADGES (F, LR, DIN, KIT, UT, MR, MT, PR, ST, ML, BR1, D1, T1, BR2, etc.) DIRECTLY ON TOP OF CANVAS
+    const ctx = canvas.getContext('2d');
+    const roomCentroids: { code: string; screenX: number; screenY: number }[] = [];
+
+    if (ctx) {
+      centroid3DPositions.forEach((cp) => {
+        // Project 3D coordinate to screen coordinates
+        const v = new THREE.Vector3(cp.x, 1.1, cp.z);
+        v.project(camera);
+
+        const screenX = ((v.x + 1) * this.width) / 2;
+        const screenY = ((-v.y + 1) * this.height) / 2;
+
+        roomCentroids.push({ code: cp.code, screenX, screenY });
+
+        // Draw Deep Navy Pill Badge with Gold Border & White Bold Text matching Image 2!
+        ctx.save();
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
+        ctx.shadowBlur = 8;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 3;
+
+        const badgeWidth = cp.code.length > 2 ? 46 : 38;
+        const badgeHeight = 24;
+        const bx = screenX - badgeWidth / 2;
+        const by = screenY - badgeHeight / 2;
+        const radius = 5;
+
+        // Pill background
+        ctx.beginPath();
+        ctx.roundRect(bx, by, badgeWidth, badgeHeight, radius);
+        ctx.fillStyle = '#1F2B38'; // Deep Navy
+        ctx.fill();
+
+        // Gold border
+        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = '#B88E52'; // Antique Brass
+        ctx.stroke();
+
+        // Room Code Text
+        ctx.shadowColor = 'transparent';
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = 'bold 12px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(cp.code, screenX, screenY + 1);
+        ctx.restore();
+      });
+    }
+
+    // 12. Extract High-Res PNG Data URL
+    const pngDataUrl = canvas.toDataURL('image/png');
     renderer.dispose();
 
     return {
@@ -390,3 +531,4 @@ export class ThreeRenderEngine {
     };
   }
 }
+

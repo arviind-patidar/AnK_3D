@@ -92,27 +92,36 @@ export class SheetComposerService {
 
               <text font-family="'Inter', sans-serif" font-size="10" font-weight="800" fill="#B88E52" x="0" y="62" letter-spacing="0.5">ROOM INDEX — ${floorData.floorKey === 'lower' ? 'LOWER FLOOR' : 'UPPER FLOOR'}</text>
 
+              <!-- Column Headers (Code | Room | Dimensions | Sq ft) -->
+              <g transform="translate(0, 74)">
+                <text font-family="'Inter', sans-serif" font-weight="700" font-size="9" fill="#A0AEC0" x="0" y="0">Code</text>
+                <text font-family="'Inter', sans-serif" font-weight="700" font-size="9" fill="#A0AEC0" x="34" y="0">Room</text>
+                <text font-family="'Inter', sans-serif" font-weight="700" font-size="9" fill="#A0AEC0" x="120" y="0">Dimensions</text>
+                <text font-family="'Inter', sans-serif" font-weight="700" font-size="9" fill="#A0AEC0" x="${panelWidth - 28}" y="0" text-anchor="end">Sq ft</text>
+                <line x1="0" y1="6" x2="${panelWidth - 28}" y2="6" stroke="#B88E52" stroke-width="0.75" opacity="0.6" />
+              </g>
+
               <!-- Table Rows (Section 13: 2-line non-truncated room rows!) -->
-              <g transform="translate(0, 80)">
+              <g transform="translate(0, 92)">
       `;
 
       // Render 2-line non-truncated room rows
-      const displayRooms = floorData.rooms.slice(0, 18);
+      const displayRooms = floorData.rooms.slice(0, 20);
       let rowY = 0;
 
       displayRooms.forEach((room) => {
-        const sqFtText = room.calculatedSqFt !== 'NR' ? `${room.calculatedSqFt} sq ft` : 'NR';
+        const sqFtText = room.calculatedSqFt !== 'NR' ? `${room.calculatedSqFt}` : '—';
         sectionSvg += `
           <!-- Line 1: Code & Full Room Name -->
           <text class="tbl-code" x="0" y="${rowY}">${room.code}</text>
           <text class="tbl-name" x="34" y="${rowY}">${room.name}</text>
 
           <!-- Line 2: Dimensions & Derived Area -->
-          <text class="tbl-dim" x="34" y="${rowY + 12}">${room.dimensions}</text>
-          <text class="tbl-sqft" x="${panelWidth - 38}" y="${rowY + 12}" text-anchor="end">${sqFtText}</text>
-          <line x1="0" y1="${rowY + 18}" x2="${panelWidth - 28}" y2="${rowY + 18}" stroke="#2D3748" stroke-width="0.75" />
+          <text class="tbl-dim" x="34" y="${rowY + 11}">${room.dimensions}</text>
+          <text class="tbl-sqft" x="${panelWidth - 28}" y="${rowY + 11}" text-anchor="end">${sqFtText}</text>
+          <line x1="0" y1="${rowY + 16}" x2="${panelWidth - 28}" y2="${rowY + 16}" stroke="#2D3748" stroke-width="0.5" />
         `;
-        rowY += 28;
+        rowY += 25;
       });
 
       sectionSvg += `

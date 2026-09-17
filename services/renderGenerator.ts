@@ -100,12 +100,12 @@ export class RenderGeneratorService {
     const width = 1600;
     const height = 1200;
 
-    // Build SVG raster data URI representation
-    const isoMap = (px: number, py: number, z: number = 0) => {
-      const scaleX = 1000;
-      const scaleY = 750;
-      const originX = 300;
-      const originY = 250;
+    // Build top-down 60-degree orthographic projection mapping matching Image 2
+    const mapToIso = (px: number, py: number, z: number = 0) => {
+      const scaleX = 1100;
+      const scaleY = 850;
+      const originX = 250;
+      const originY = 180;
       const cos30 = 0.866;
       const sin30 = 0.5;
 
@@ -113,13 +113,30 @@ export class RenderGeneratorService {
       const normY = py * scaleY;
 
       const screenX = originX + (normX - normY) * cos30 * 0.85;
-      const screenY = originY + (normX + normY) * sin30 * 0.7 - z;
+      const screenY = originY + (normX + normY) * sin30 * 0.65 - z;
 
       return { x: screenX, y: screenY };
     };
 
     const svgParts: string[] = [
       `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">`,
+      `<defs>`,
+      `  <linearGradient id="woodGrad" x1="0%" y1="0%" x2="100%" y2="100%">`,
+      `    <stop offset="0%" stop-color="#C4A27B" />`,
+      `    <stop offset="100%" stop-color="#B38F68" />`,
+      `  </linearGradient>`,
+      `  <linearGradient id="tileGrad" x1="0%" y1="0%" x2="100%" y2="100%">`,
+      `    <stop offset="0%" stop-color="#EBE7DF" />`,
+      `    <stop offset="100%" stop-color="#DFD9CE" />`,
+      `  </linearGradient>`,
+      `  <linearGradient id="deckGrad" x1="0%" y1="0%" x2="100%" y2="100%">`,
+      `    <stop offset="0%" stop-color="#8A6343" />`,
+      `    <stop offset="100%" stop-color="#735034" />`,
+      `  </linearGradient>`,
+      `  <filter id="shadowFilter" x="-10%" y="-10%" width="130%" height="130%">`,
+      `    <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000000" flood-opacity="0.3" />`,
+      `  </filter>`,
+      `</defs>`,
       `<rect width="${width}" height="${height}" fill="#FAF8F5" />`,
       `<g transform="translate(40, 20)">`,
     ];
@@ -127,38 +144,94 @@ export class RenderGeneratorService {
     // Floor slabs
     floorData.rooms.forEach((room) => {
       if (!room.polygon || room.polygon.length < 3) return;
-      const pts = room.polygon.map(([px, py]) => isoMap(px, py, 0));
+      const pts = room.polygon.map(([px, py]) => mapToIso(px, py, 0));
       const pathD = `M ${pts.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' L ')} Z`;
-      const fill = room.type === 'balcony' || room.type === 'standing_balcony' ? '#B8AD9E' : room.type === 'toilet' ? '#EFECE6' : '#C5A075';
-      svgParts.push(`<path d="${pathD}" fill="${fill}" stroke="#A6907B" stroke-width="2" />`);
+      const fill =
+        room.type === 'balcony' || room.type === 'standing_balcony'
+          ? 'url(#deckGrad)'
+          : room.type === 'toilet' || room.type === 'powder'
+          ? '#F2F0EB'
+          : room.type === 'kitchen' || room.type === 'utility'
+          ? 'url(#tileGrad)'
+          : 'url(#woodGrad)';
+      svgParts.push(`<path d="${pathD}" fill="${fill}" stroke="#A6907B" stroke-width="1.5" />`);
     });
 
-    // Extruded walls
-    const wallHeight = 55;
+    // Balcony Foliage Green Planters
+    floorData.rooms.forEach((room) => {
+      if (room.type === 'balcony' || room.type === 'standing_balcony') {
+        let bx = 0;
+        let by = 0;
+        room.polygon.forEach(([px, py]) => {
+          bx += px;
+          by += py;
+        });
+        bx /= room.polygon.length;
+        by /= room.polygon.length;
+        const pos = mapToIso(bx, by, 8);
+        svgParts.push(`
+          <g transform="translate(${pos.x}, ${pos.y})">
+            <rect x="-24" y="-8" width="48" height="16" fill="#4A4E52" rx="4" />
+            <circle cx="-16" cy="0" r="10" fill="#2E6F40" />
+            <circle cx="0" cy="-2" r="12" fill="#388E3C" />
+            <circle cx="16" cy="0" r="10" fill="#2E6F40" />
+          </g>
+        `);
+      }
+    });
+
+    // Extruded walls with dark slate grey cap
+    const wallHeight = 45;
     floorData.rooms.forEach((room) => {
       if (!room.polygon || room.polygon.length < 3 || room.type === 'void') return;
       for (let i = 0; i < room.polygon.length; i++) {
         const p1Raw = room.polygon[i];
         const p2Raw = room.polygon[(i + 1) % room.polygon.length];
-        const b1 = isoMap(p1Raw[0], p1Raw[1], 0);
-        const b2 = isoMap(p2Raw[0], p2Raw[1], 0);
-        const t1 = isoMap(p1Raw[0], p1Raw[1], wallHeight);
-        const t2 = isoMap(p2Raw[0], p2Raw[1], wallHeight);
+        const b1 = mapToIso(p1Raw[0], p1Raw[1], 0);
+        const b2 = mapToIso(p2Raw[0], p2Raw[1], 0);
+        const t1 = mapToIso(p1Raw[0], p1Raw[1], wallHeight);
+        const t2 = mapToIso(p2Raw[0], p2Raw[1], wallHeight);
 
         const wallD = `M ${b1.x.toFixed(1)},${b1.y.toFixed(1)} L ${b2.x.toFixed(1)},${b2.y.toFixed(1)} L ${t2.x.toFixed(1)},${t2.y.toFixed(1)} L ${t1.x.toFixed(1)},${t1.y.toFixed(1)} Z`;
-        svgParts.push(`<path d="${wallD}" fill="#2D3748" stroke="#1F2B38" stroke-width="1.5" />`);
+        svgParts.push(`<path d="${wallD}" fill="#F8F6F0" stroke="#343A40" stroke-width="1.5" />`);
       }
     });
 
-    // Furniture
+    // Top Wall Cap Layer (Dark Slate Grey)
+    floorData.rooms.forEach((room) => {
+      if (!room.polygon || room.polygon.length < 3 || room.type === 'void') return;
+      const ptsTop = room.polygon.map(([px, py]) => mapToIso(px, py, wallHeight));
+      const pathTopD = `M ${ptsTop.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' L ')} Z`;
+      svgParts.push(`<path d="${pathTopD}" fill="none" stroke="#343A40" stroke-width="4" stroke-linejoin="round" />`);
+    });
+
+    // Furniture Blocks
     floorData.rooms.forEach((room) => {
       room.furniture.forEach((f) => {
-        const pos = isoMap(f.position[0], f.position[1], 5);
-        svgParts.push(`<rect x="${pos.x - 25}" y="${pos.y - 15}" width="50" height="30" fill="#8C7A6B" rx="3" stroke="#1F2B38" stroke-width="1.5" />`);
+        const pos = mapToIso(f.position[0], f.position[1], 8);
+        if (f.type === 'bed') {
+          svgParts.push(`
+            <g transform="translate(${pos.x}, ${pos.y})">
+              <rect x="-24" y="-28" width="48" height="56" fill="#5C4838" rx="4" />
+              <rect x="-22" y="-24" width="44" height="48" fill="#FFFFFF" rx="3" />
+              <rect x="-18" y="-20" width="16" height="10" fill="#F0EDE6" rx="2" />
+              <rect x="2" y="-20" width="16" height="10" fill="#F0EDE6" rx="2" />
+            </g>
+          `);
+        } else if (f.type === 'sofa') {
+          svgParts.push(`
+            <g transform="translate(${pos.x}, ${pos.y})">
+              <rect x="-30" y="-15" width="60" height="30" fill="#F0EDE6" rx="5" stroke="#5C4838" stroke-width="1.5" />
+              <rect x="-12" y="18" width="24" height="14" fill="#5C4838" rx="2" />
+            </g>
+          `);
+        } else {
+          svgParts.push(`<rect x="${pos.x - 20}" y="${pos.y - 12}" width="40" height="24" fill="#5C4838" rx="3" />`);
+        }
       });
     });
 
-    // Room codes
+    // ROOM CODE BADGES OVERLAID DIRECTLY ON TOP OF RENDER (Deep Navy #1F2B38, Gold Border #B88E52, White Bold Text)
     floorData.rooms.forEach((room) => {
       if (!room.polygon || room.polygon.length < 3 || room.type === 'void') return;
       let cx = 0;
@@ -169,12 +242,15 @@ export class RenderGeneratorService {
       });
       cx /= room.polygon.length;
       cy /= room.polygon.length;
-      const pos = isoMap(cx, cy, wallHeight + 5);
+      const pos = mapToIso(cx, cy, wallHeight + 10);
+
+      const bw = room.code.length > 2 ? 46 : 38;
+      const bh = 24;
 
       svgParts.push(`
-        <g transform="translate(${pos.x}, ${pos.y})">
-          <rect x="-22" y="-13" width="44" height="26" rx="6" fill="#1F2B38" stroke="#B88E52" stroke-width="2" />
-          <text x="0" y="4" font-family="sans-serif" font-size="12" font-weight="bold" fill="#F7F3EC" text-anchor="middle">${room.code}</text>
+        <g transform="translate(${pos.x}, ${pos.y})" filter="url(#shadowFilter)">
+          <rect x="-${bw / 2}" y="-${bh / 2}" width="${bw}" height="${bh}" rx="5" fill="#1F2B38" stroke="#B88E52" stroke-width="1.5" />
+          <text x="0" y="4" font-family="'Inter', sans-serif" font-size="12" font-weight="800" fill="#FFFFFF" text-anchor="middle">${room.code}</text>
         </g>
       `);
     });
@@ -185,3 +261,4 @@ export class RenderGeneratorService {
     return `data:image/svg+xml;base64,${base64Svg}`;
   }
 }
+
