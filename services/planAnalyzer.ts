@@ -41,13 +41,29 @@ export class PlanAnalyzerService {
     imageUrls: string[],
     metadata: ProjectMetadata
   ): Promise<FloorPlanJSON> {
+    const apiKey =
+      this.options.visionApiKey ||
+      process.env.GEMINI_API_KEY ||
+      process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+
+    if (apiKey && (apiKey.startsWith('AQ.') || this.options.visionModelProvider === 'gemini')) {
+      const { GeminiService } = await import('@/services/geminiService');
+      const gemini = new GeminiService(apiKey);
+      const firstImage = imageUrls[0] || '';
+      return await gemini.analyzeFloorPlanImage(
+        firstImage,
+        'image/jpeg',
+        metadata.propertyName,
+        metadata.layoutType
+      );
+    }
+
     const promptText = buildFloorPlanAnalysisPrompt(metadata);
-    // In server environment, Vision API request can be made to OpenAI or Gemini endpoints
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${this.options.visionApiKey}`,
+        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
         model: 'gpt-4o',
