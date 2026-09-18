@@ -441,19 +441,17 @@ export class ThreeRenderEngine {
     dirLight.shadow.bias = -0.0005;
     scene.add(dirLight);
 
-    // 9. TOP-DOWN CUTAWAY ORTHOGRAPHIC CAMERA (Matching Image 2 Angle!)
+    // 9. TOP-DOWN CUTAWAY ORTHOGRAPHIC CAMERA (Matching Image 2 Angle & Framing)
     const bbox = new THREE.Box3().setFromObject(floorGroup);
     const bboxSize = new THREE.Vector3();
     const bboxCenter = new THREE.Vector3();
     bbox.getSize(bboxSize);
     bbox.getCenter(bboxCenter);
 
-    const maxDim = Math.max(bboxSize.x, bboxSize.z);
     const aspect = this.width / this.height;
-
-    // Tight padding so 3D dollhouse model fills frame cleanly
-    const orthoH = maxDim * 0.56;
-    const orthoW = orthoH * aspect;
+    // Calculate tight orthographic bounds from model bounding size (88-92% occupancy)
+    const orthoH = (bboxSize.z / 2) * 1.15;
+    const orthoW = Math.max((bboxSize.x / 2) * 1.15, orthoH * aspect);
 
     const camera = new THREE.OrthographicCamera(
       -orthoW,
@@ -464,8 +462,8 @@ export class ThreeRenderEngine {
       1000
     );
 
-    // Position camera at 60-degree top-down cutaway angle looking directly down at model
-    camera.position.set(bboxCenter.x, bboxCenter.y + 36, bboxCenter.z + 20);
+    // Position camera at 60-degree top-down cutaway angle looking directly at model center
+    camera.position.set(bboxCenter.x, bboxCenter.y + 38, bboxCenter.z + 22);
     camera.lookAt(bboxCenter.x, 0, bboxCenter.z);
 
     // 10. Render 3D Scene to WebGL Canvas
@@ -478,7 +476,7 @@ export class ThreeRenderEngine {
     if (ctx) {
       centroid3DPositions.forEach((cp) => {
         // Project 3D coordinate to screen coordinates
-        const v = new THREE.Vector3(cp.x, 1.1, cp.z);
+        const v = new THREE.Vector3(cp.x, 1.2, cp.z);
         v.project(camera);
 
         const screenX = ((v.x + 1) * this.width) / 2;
@@ -488,12 +486,12 @@ export class ThreeRenderEngine {
 
         // Draw Deep Navy Pill Badge with Gold Border & White Bold Text matching Image 2!
         ctx.save();
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.45)';
         ctx.shadowBlur = 8;
         ctx.shadowOffsetX = 0;
         ctx.shadowOffsetY = 3;
 
-        const badgeWidth = cp.code.length > 2 ? 46 : 38;
+        const badgeWidth = Math.max(38, cp.code.length * 11 + 16);
         const badgeHeight = 24;
         const bx = screenX - badgeWidth / 2;
         const by = screenY - badgeHeight / 2;
