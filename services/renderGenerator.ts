@@ -205,28 +205,84 @@ export class RenderGeneratorService {
       svgParts.push(`<path d="${pathTopD}" fill="none" stroke="#343A40" stroke-width="4" stroke-linejoin="round" />`);
     });
 
-    // Furniture Blocks
+    // Furniture Blocks with High-Fidelity Architectural Styling
     floorData.rooms.forEach((room) => {
       room.furniture.forEach((f) => {
         const pos = mapToIso(f.position[0], f.position[1], 8);
         if (f.type === 'bed') {
           svgParts.push(`
+            <!-- King / Queen Bed with Headboard, Duvet & Nightstands -->
             <g transform="translate(${pos.x}, ${pos.y})">
-              <rect x="-24" y="-28" width="48" height="56" fill="#5C4838" rx="4" />
-              <rect x="-22" y="-24" width="44" height="48" fill="#FFFFFF" rx="3" />
-              <rect x="-18" y="-20" width="16" height="10" fill="#F0EDE6" rx="2" />
-              <rect x="2" y="-20" width="16" height="10" fill="#F0EDE6" rx="2" />
+              <!-- Wooden Headboard -->
+              <rect x="-26" y="-32" width="52" height="8" fill="#4A3525" rx="2" />
+              <!-- Base Frame -->
+              <rect x="-24" y="-24" width="48" height="52" fill="#5C4838" rx="3" />
+              <!-- Crisp White Duvet -->
+              <rect x="-22" y="-14" width="44" height="40" fill="#FFFFFF" rx="2" stroke="#E2DCD2" stroke-width="1" />
+              <!-- Bed Runner -->
+              <rect x="-22" y="14" width="44" height="10" fill="#4A3525" rx="1" opacity="0.85" />
+              <!-- Pillows -->
+              <rect x="-19" y="-22" width="16" height="9" fill="#F5F3EE" rx="2" stroke="#D0C8B8" stroke-width="0.75" />
+              <rect x="3" y="-22" width="16" height="9" fill="#F5F3EE" rx="2" stroke="#D0C8B8" stroke-width="0.75" />
+              <!-- Nightstands with Lamps -->
+              <rect x="-34" y="-28" width="7" height="8" fill="#4A3525" rx="1" />
+              <circle cx="-30.5" cy="-24" r="2.5" fill="#B88E52" />
+              <rect x="27" y="-28" width="7" height="8" fill="#4A3525" rx="1" />
+              <circle cx="30.5" cy="-24" r="2.5" fill="#B88E52" />
             </g>
           `);
         } else if (f.type === 'sofa') {
           svgParts.push(`
+            <!-- Modern L-Sectional Sofa with Coffee Table & Area Rug -->
             <g transform="translate(${pos.x}, ${pos.y})">
-              <rect x="-30" y="-15" width="60" height="30" fill="#F0EDE6" rx="5" stroke="#5C4838" stroke-width="1.5" />
-              <rect x="-12" y="18" width="24" height="14" fill="#5C4838" rx="2" />
+              <!-- Area Rug -->
+              <rect x="-38" y="-22" width="76" height="54" fill="#E2DCD2" rx="4" opacity="0.6" />
+              <!-- Main Sofa Base -->
+              <rect x="-34" y="-18" width="68" height="22" fill="#EAE6DF" rx="4" stroke="#8C7A6B" stroke-width="1" />
+              <!-- Sofa Backrest -->
+              <rect x="-34" y="-18" width="68" height="7" fill="#D0C8B8" rx="2" />
+              <!-- L-Chaise Extension -->
+              <rect x="14" y="4" width="20" height="24" fill="#EAE6DF" rx="3" stroke="#8C7A6B" stroke-width="1" />
+              <!-- Coffee Table -->
+              <rect x="-18" y="4" width="26" height="14" fill="#4A3525" rx="2" />
+            </g>
+          `);
+        } else if (f.type === 'dining_table') {
+          svgParts.push(`
+            <!-- 6-Seater Dining Table & Upholstered Chairs -->
+            <g transform="translate(${pos.x}, ${pos.y})">
+              <!-- Table Top -->
+              <rect x="-28" y="-14" width="56" height="28" fill="#4A3525" rx="3" stroke="#2C1D11" stroke-width="1" />
+              <!-- 6 Chairs -->
+              <rect x="-24" y="-22" width="10" height="6" fill="#EAE6DF" rx="1.5" />
+              <rect x="-5" y="-22" width="10" height="6" fill="#EAE6DF" rx="1.5" />
+              <rect x="14" y="-22" width="10" height="6" fill="#EAE6DF" rx="1.5" />
+              <rect x="-24" y="16" width="10" height="6" fill="#EAE6DF" rx="1.5" />
+              <rect x="-5" y="16" width="10" height="6" fill="#EAE6DF" rx="1.5" />
+              <rect x="14" y="16" width="10" height="6" fill="#EAE6DF" rx="1.5" />
+            </g>
+          `);
+        } else if (f.type === 'counter') {
+          svgParts.push(`
+            <!-- Kitchen / Utility Marble Counter -->
+            <g transform="translate(${pos.x}, ${pos.y})">
+              <rect x="-28" y="-12" width="56" height="24" fill="#F3EFE6" rx="2" stroke="#B88E52" stroke-width="1" />
+              <rect x="-20" y="-8" width="14" height="16" fill="#3D4144" rx="2" />
+              <circle cx="12" cy="0" r="5" fill="#A0AEC0" />
+            </g>
+          `);
+        } else if (f.type === 'sanitary') {
+          svgParts.push(`
+            <!-- Bathroom Vanity & Glass Shower partition -->
+            <g transform="translate(${pos.x}, ${pos.y})">
+              <rect x="-20" y="-12" width="40" height="24" fill="#F3EFE6" rx="3" stroke="#CBD5E0" stroke-width="1" />
+              <ellipse cx="-8" cy="0" rx="6" ry="4" fill="#FFFFFF" stroke="#A0AEC0" stroke-width="1" />
+              <!-- Glass Shower Enclosure -->
+              <rect x="8" y="-10" width="12" height="20" fill="#90CAF9" opacity="0.4" rx="1" stroke="#42A5F5" stroke-width="1" />
             </g>
           `);
         } else {
-          svgParts.push(`<rect x="${pos.x - 20}" y="${pos.y - 12}" width="40" height="24" fill="#5C4838" rx="3" />`);
+          svgParts.push(`<rect x="${pos.x - 16}" y="${pos.y - 10}" width="32" height="20" fill="#4A3525" rx="3" />`);
         }
       });
     });
@@ -244,13 +300,13 @@ export class RenderGeneratorService {
       cy /= room.polygon.length;
       const pos = mapToIso(cx, cy, wallHeight + 10);
 
-      const bw = room.code.length > 2 ? 46 : 38;
+      const bw = Math.max(38, room.code.length * 10 + 16);
       const bh = 24;
 
       svgParts.push(`
         <g transform="translate(${pos.x}, ${pos.y})" filter="url(#shadowFilter)">
           <rect x="-${bw / 2}" y="-${bh / 2}" width="${bw}" height="${bh}" rx="5" fill="#1F2B38" stroke="#B88E52" stroke-width="1.5" />
-          <text x="0" y="4" font-family="'Inter', sans-serif" font-size="12" font-weight="800" fill="#FFFFFF" text-anchor="middle">${room.code}</text>
+          <text x="0" y="4" font-family="'Inter', sans-serif" font-size="11" font-weight="800" fill="#FFFFFF" text-anchor="middle">${room.code}</text>
         </g>
       `);
     });
