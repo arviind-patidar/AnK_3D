@@ -86,7 +86,7 @@ export class SheetComposerService {
             <g transform="translate(14, 25)">
               <text class="panel-title" font-size="14" x="0" y="0">${meta.propertyName.toUpperCase()}</text>
               <text class="panel-sub" font-size="11" x="0" y="18">${sectionTitle}</text>
-              <text font-family="'Inter', sans-serif" font-size="10" font-weight="600" fill="#E2E8F0" x="0" y="34">5 BHK + MAID'S UNIT</text>
+              <text font-family="'Inter', sans-serif" font-size="10" font-weight="600" fill="#E2E8F0" x="0" y="34">${meta.layoutType.toUpperCase()}</text>
 
               <line x1="0" y1="46" x2="${panelWidth - 28}" y2="46" stroke="#B88E52" stroke-width="1" opacity="0.4" />
 

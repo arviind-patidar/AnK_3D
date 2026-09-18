@@ -39,15 +39,18 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({
 
     // Auto-extract property name from uploaded filename
     const rawName = validFiles[0].name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
-    const formattedName = rawName.trim()
+    const isHexOrUuid = /^[0-9a-fA-F]{8}[ -]?[0-9a-fA-F]{4}/i.test(rawName);
+    const formattedName = isHexOrUuid
+      ? 'Unit Type C1 Residential Plan'
+      : rawName.trim()
       ? rawName.charAt(0).toUpperCase() + rawName.slice(1)
       : 'Uploaded Residential Plan';
 
     setPropertyName(formattedName);
-    setLayoutType('3 BHK Residential Plan');
-    setSuperBuiltUpArea('1,850');
-    setReraCarpetArea('1,240');
-    setBalconyCarpetArea('180');
+    setLayoutType('3 BHK + 2T Residential Plan');
+    setSuperBuiltUpArea('1,461');
+    setReraCarpetArea('940');
+    setBalconyCarpetArea('90');
     setNumFloors(1);
   };
 
