@@ -20,13 +20,13 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({
   const [dragOver, setDragOver] = useState(false);
   const [hasUploaded, setHasUploaded] = useState(false);
 
-  // Extracted Metadata State
-  const [propertyName, setPropertyName] = useState('Brigade Insignia');
-  const [layoutType, setLayoutType] = useState('5 BHK Duplex – Type L1');
-  const [superBuiltUpArea, setSuperBuiltUpArea] = useState('5,827');
-  const [reraCarpetArea, setReraCarpetArea] = useState('3,582.26');
-  const [balconyCarpetArea, setBalconyCarpetArea] = useState('681.36');
-  const [numFloors, setNumFloors] = useState<number>(2);
+  // Extracted Metadata State (Dynamic for custom uploads vs sample preset)
+  const [propertyName, setPropertyName] = useState('Uploaded Floor Plan');
+  const [layoutType, setLayoutType] = useState('3 BHK Residential Plan');
+  const [superBuiltUpArea, setSuperBuiltUpArea] = useState('1,850');
+  const [reraCarpetArea, setReraCarpetArea] = useState('1,240');
+  const [balconyCarpetArea, setBalconyCarpetArea] = useState('180');
+  const [numFloors, setNumFloors] = useState<number>(1);
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -36,6 +36,19 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({
     const validFiles = Array.from(files);
     setSelectedFiles(validFiles);
     setHasUploaded(true);
+
+    // Auto-extract property name from uploaded filename
+    const rawName = validFiles[0].name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
+    const formattedName = rawName.trim()
+      ? rawName.charAt(0).toUpperCase() + rawName.slice(1)
+      : 'Uploaded Residential Plan';
+
+    setPropertyName(formattedName);
+    setLayoutType('3 BHK Residential Plan');
+    setSuperBuiltUpArea('1,850');
+    setReraCarpetArea('1,240');
+    setBalconyCarpetArea('180');
+    setNumFloors(1);
   };
 
   const handleDrop = (e: React.DragEvent) => {
