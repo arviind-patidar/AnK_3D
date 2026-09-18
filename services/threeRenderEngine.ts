@@ -46,68 +46,68 @@ export class ThreeRenderEngine {
     const scene = new THREE.Scene();
     scene.background = new THREE.Color('#FAF8F5');
 
-    // 3. Materials Registry (Luxury Real-Estate Architectural Palette matching Image 2)
+    // 3. Materials Registry (Luxury Real-Estate Architectural Palette matching Image 2 target)
     const wallInnerMat = new THREE.MeshStandardMaterial({
-      color: 0xf8f6f0, // Crisp warm alabaster
-      roughness: 0.75,
+      color: 0xfaf9f6, // Crisp architectural alabaster
+      roughness: 0.7,
     });
     const wallCapMat = new THREE.MeshStandardMaterial({
-      color: 0x343a40, // Dark slate grey top wall cap
-      roughness: 0.4,
+      color: 0x2c3539, // Dark slate charcoal top wall cap
+      roughness: 0.35,
     });
     const woodFloorMat = new THREE.MeshStandardMaterial({
-      color: 0xc4a27b, // Warm Honey Oak
-      roughness: 0.35,
-      metalness: 0.02,
+      color: 0xc89d66, // Warm Honey Oak Hardwood
+      roughness: 0.28,
+      metalness: 0.05,
     });
     const tileFloorMat = new THREE.MeshStandardMaterial({
-      color: 0xebe7df, // Light Polish Porcelain / Marble
-      roughness: 0.2,
-      metalness: 0.01,
+      color: 0xf3efe6, // Light Polish Porcelain / Marble
+      roughness: 0.15,
+      metalness: 0.02,
     });
     const bathTileFloorMat = new THREE.MeshStandardMaterial({
-      color: 0xf2f0eb, // Soft white ceramic
-      roughness: 0.25,
+      color: 0xe8e4dc, // Soft white ceramic tile
+      roughness: 0.2,
     });
     const balconyFloorMat = new THREE.MeshStandardMaterial({
-      color: 0x8a6343, // Teak Outdoor Decking Wood
-      roughness: 0.5,
-    });
-    const plantFoliageMat = new THREE.MeshStandardMaterial({
-      color: 0x2e6f40, // Lush Green Balcony Planter Foliage
-      roughness: 0.8,
-    });
-    const plantPotMat = new THREE.MeshStandardMaterial({
-      color: 0x4a4e52, // Dark Charcoal Planter Box
-      roughness: 0.6,
-    });
-    const furnitureWoodMat = new THREE.MeshStandardMaterial({
-      color: 0x5c4838, // Natural Warm Walnut/Oak
+      color: 0x7a5230, // Teak Outdoor Decking Wood
       roughness: 0.45,
     });
+    const plantFoliageMat = new THREE.MeshStandardMaterial({
+      color: 0x1e5631, // Lush Emerald Green Foliage
+      roughness: 0.75,
+    });
+    const plantPotMat = new THREE.MeshStandardMaterial({
+      color: 0x3d4144, // Charcoal Planter Box
+      roughness: 0.5,
+    });
+    const furnitureWoodMat = new THREE.MeshStandardMaterial({
+      color: 0x4a3525, // Rich Warm Walnut
+      roughness: 0.4,
+    });
     const furnitureFabricMat = new THREE.MeshStandardMaterial({
-      color: 0xf0ede6, // Soft Off-white / Cream Upholstery
-      roughness: 0.8,
+      color: 0xeae6df, // Soft Linen Cream Upholstery
+      roughness: 0.75,
     });
     const duvetMat = new THREE.MeshStandardMaterial({
-      color: 0xffffff, // Crisp White Duvet
-      roughness: 0.9,
+      color: 0xffffff, // Crisp Hotel White Duvet
+      roughness: 0.85,
     });
     const pillowMat = new THREE.MeshStandardMaterial({
       color: 0xf5f3ee,
-      roughness: 0.85,
+      roughness: 0.8,
     });
     const accentBrassMat = new THREE.MeshStandardMaterial({
       color: 0xb88e52, // Antique Brass
-      metalness: 0.7,
-      roughness: 0.25,
+      metalness: 0.8,
+      roughness: 0.2,
     });
     const glassMat = new THREE.MeshPhysicalMaterial({
-      color: 0xa8d8ff,
+      color: 0x90caf9,
       transparent: true,
-      opacity: 0.35,
-      roughness: 0.1,
-      transmission: 0.85,
+      opacity: 0.4,
+      roughness: 0.08,
+      transmission: 0.9,
     });
 
     // Group to hold all 3D floor objects
