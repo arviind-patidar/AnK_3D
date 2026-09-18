@@ -7,7 +7,7 @@ export class GeminiService {
     this.apiKey =
       apiKey ||
       process.env.GEMINI_API_KEY ||
-      process.env.NEXT_PUBLIC_GEMINI_API_KEY ||
+      (typeof window !== 'undefined' ? (window as any).GEMINI_API_KEY : '') ||
       '';
   }
 

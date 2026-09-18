@@ -43,26 +43,68 @@ export default function Home() {
   };
 
   /**
-   * Step 1 -> Step 2: Upload & Vision Analysis
+   * Step 1 -> Step 2: Upload & Gemini Multimodal Vision Analysis Pipeline
    */
   const handleUploadAndAnalyze = async (imageUrls: string[], metadata: ProjectMetadata) => {
     try {
       setIsAnalyzing(true);
-      const res = await fetch('/api/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ imageUrls, metadata }),
-      });
 
-      if (!res.ok) throw new Error('Plan analysis API unavailable.');
-      const parsedPlan: FloorPlanJSON = await res.json();
-      setPlanJson(parsedPlan);
-      setIsAnalyzing(false);
+      // 1. Document Detection & Multimodal Architectural Analysis
+      const { GeminiAnalyzerService } = await import('@/services/analysis/geminiAnalyzer');
+      const { TopologyValidatorService } = await import('@/services/validation/topologyValidator');
 
-      if (parsedPlan.ambiguities && parsedPlan.ambiguities.length > 0 && !parsedPlan.isApprovedByUsers) {
-        setActiveAmbiguities(parsedPlan.ambiguities);
-      } else {
-        advanceStep(2);
+      const analyzer = new GeminiAnalyzerService();
+      const validator = new TopologyValidatorService();
+
+      let parsedPlan: FloorPlanJSON | null = null;
+
+      if (imageUrls && imageUrls.length > 0) {
+        try {
+          // Convert image URL/blob to base64 if needed
+          let base64Image = imageUrls[0];
+          if (imageUrls[0].startsWith('blob:') || imageUrls[0].startsWith('http')) {
+            const blobRes = await fetch(imageUrls[0]);
+            const blob = await blobRes.blob();
+            const reader = new FileReader();
+            base64Image = await new Promise<string>((resolve) => {
+              reader.onloadend = () => resolve(reader.result as string);
+              reader.readAsDataURL(blob);
+            });
+          }
+
+          parsedPlan = await analyzer.analyzeFloorPlan(
+            base64Image,
+            'image/jpeg',
+            metadata.propertyName,
+            metadata.layoutType
+          );
+        } catch (visionErr) {
+          console.warn('[Pipeline] Client-side Gemini Vision call failed, trying API endpoint:', visionErr);
+        }
+      }
+
+      if (!parsedPlan) {
+        const res = await fetch('/api/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ imageUrls, metadata }),
+        });
+        if (!res.ok) throw new Error('Plan analysis API unavailable.');
+        parsedPlan = await res.json();
+      }
+
+      // 2. Application Validation & Topology QA Check
+      if (parsedPlan) {
+        const report = validator.validatePlan(parsedPlan);
+        setValidationResult(report.validationResult);
+        setPlanJson(parsedPlan);
+        setIsAnalyzing(false);
+
+        if (parsedPlan.ambiguities && parsedPlan.ambiguities.length > 0 && !parsedPlan.isApprovedByUsers) {
+          setActiveAmbiguities(parsedPlan.ambiguities);
+        } else {
+          advanceStep(2);
+        }
       }
     } catch (err: any) {
       console.warn('API unavailable; generating dynamic floor plan structure for uploaded image:', err);

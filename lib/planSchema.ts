@@ -24,6 +24,7 @@ export interface Door {
   wallIndex?: number;
   swingDirection?: 'inward' | 'outward' | 'sliding' | 'bi-fold' | 'unclear';
   width?: number;
+  confidenceScore?: number;
 }
 
 export interface Window {
@@ -31,6 +32,7 @@ export interface Window {
   position: Point2D;
   width?: number;
   type?: 'full_height' | 'standard' | 'bay';
+  confidenceScore?: number;
 }
 
 export interface FurnitureAnchor {
@@ -39,6 +41,7 @@ export interface FurnitureAnchor {
   position: Point2D;
   orientation?: string; // 'north', 'south', 'east', 'west' or degrees
   label?: string;
+  confidenceScore?: number;
 }
 
 export interface Stair {
@@ -47,6 +50,7 @@ export interface Stair {
   direction: 'up' | 'down' | 'unclear';
   risesTowards?: string; // e.g. "upper-left", "upper-right"
   flightType?: 'straight' | 'u-shaped' | 'l-shaped' | 'spiral';
+  confidenceScore?: number;
 }
 
 export interface VoidSpace {
@@ -54,6 +58,7 @@ export interface VoidSpace {
   polygon: Point2D[];
   label: string; // e.g. "VB" (Void Below), "OTS" (Open To Sky)
   description?: string;
+  confidenceScore?: number;
 }
 
 export interface Room {
@@ -66,10 +71,12 @@ export interface Room {
   doors: Door[];
   windows: Window[];
   furniture: FurnitureAnchor[];
-  dimensions: string; // Readable string e.g. "25'10\" × 14'0\"" or "NR"
+  dimensions: string; // Readable string e.g. "25'10\" × 14'0\"" or "NR" / "REVIEW_REQUIRED"
   calculatedSqFt: number | 'NR';
   isCarpetArea: false; // Always false according to spec: "Room areas are dimension-derived; not RERA carpet area."
   floorKey: 'lower' | 'upper' | 'single' | string;
+  confidenceScore?: number; // 0.0 - 1.0
+  status?: 'APPROVED' | 'REVIEW_REQUIRED' | 'NR';
 }
 
 export interface AmbiguityItem {
