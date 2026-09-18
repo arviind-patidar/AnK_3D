@@ -180,25 +180,44 @@ export class ThreeRenderEngine {
         });
       }
 
-      // Cutaway Walls (Height = 1.4m for optimal interior visibility)
+      // Cutaway Architectural Walls (Height = 1.4m hollow perimeter walls with dark slate top caps)
       if (room.type !== 'void') {
         const wallHeight = 1.4;
-        const extrudeSettings = {
-          steps: 1,
-          depth: wallHeight,
-          bevelEnabled: true,
-          bevelThickness: 0.05,
-          bevelSize: 0.05,
-          bevelSegments: 2,
-        };
+        const wallThickness = 0.18;
 
-        const wallGeo = new THREE.ExtrudeGeometry(shape, extrudeSettings);
-        const wallMesh = new THREE.Mesh(wallGeo, [wallInnerMat, wallCapMat]);
-        wallMesh.rotation.x = -Math.PI / 2;
-        wallMesh.position.y = 0;
-        wallMesh.castShadow = true;
-        wallMesh.receiveShadow = true;
-        floorGroup.add(wallMesh);
+        for (let i = 0; i < room.polygon.length; i++) {
+          const p1 = mapTo3D(room.polygon[i][0], room.polygon[i][1]);
+          const nextIdx = (i + 1) % room.polygon.length;
+          const p2 = mapTo3D(room.polygon[nextIdx][0], room.polygon[nextIdx][1]);
+
+          const dx = p2.x - p1.x;
+          const dz = p2.z - p1.z;
+          const len = Math.hypot(dx, dz);
+          if (len < 0.05) continue;
+
+          const angle = Math.atan2(dz, dx);
+          const midX = (p1.x + p2.x) / 2;
+          const midZ = (p1.z + p2.z) / 2;
+
+          const wallSegmentGeo = new THREE.BoxGeometry(len, wallHeight, wallThickness);
+          
+          // Materials: [px, nx, py, ny, pz, nz] -> Top face (index 2 in Y-up geometry) uses dark slate wallCapMat
+          const wallMaterials = [
+            wallInnerMat, // +X
+            wallInnerMat, // -X
+            wallCapMat,   // +Y (Top Cap)
+            wallInnerMat, // -Y
+            wallInnerMat, // +Z
+            wallInnerMat, // -Z
+          ];
+
+          const wallMesh = new THREE.Mesh(wallSegmentGeo, wallMaterials);
+          wallMesh.position.set(midX, wallHeight / 2, midZ);
+          wallMesh.rotation.y = -angle;
+          wallMesh.castShadow = true;
+          wallMesh.receiveShadow = true;
+          floorGroup.add(wallMesh);
+        }
       }
 
       // Calculate Centroid in 3D Space
