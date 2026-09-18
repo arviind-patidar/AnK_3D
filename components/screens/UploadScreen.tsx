@@ -70,151 +70,82 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({
 
   return (
     <div className="w-full max-w-[1380px] mx-auto px-6 sm:px-8 lg:px-10 py-6 space-y-10">
-      {/* Top Hero Layout: 55% Left (Title + Dropzone) / 45% Right (Before/After Visual) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-        {/* Left Column: Title, Subtitle, Upload Card, Sample Link (7 cols ~58%) */}
-        <div className="lg:col-span-7 flex flex-col justify-between space-y-6">
-          <div className="space-y-3">
-            <h1 className="font-serif font-extrabold text-3xl sm:text-4xl lg:text-[42px] leading-[1.15] text-[#1F2B38] tracking-tight">
-              TURN YOUR FLOOR PLAN <br />
-              <span className="text-[#B88E52]">INTO A 3D HOME</span>
-            </h1>
-            <p className="text-sm sm:text-base text-[#718096] font-normal max-w-xl leading-relaxed">
-              Create a presentation-ready conceptual 3D visual from your residential floor plan.
-            </p>
-          </div>
-
-          {/* Premium Upload Dropzone Card */}
-          <div
-            onDragOver={(e) => {
-              e.preventDefault();
-              setDragOver(true);
-            }}
-            onDragLeave={() => setDragOver(false)}
-            onDrop={handleDrop}
-            onClick={() => fileInputRef.current?.click()}
-            className={`bg-[#FAF8F5] border-2 rounded-2xl p-6 sm:p-7 text-center cursor-pointer transition-all shadow-sm ${
-              dragOver
-                ? 'border-[#B88E52] bg-[#B88E52]/10 scale-[1.01]'
-                : 'border-[#E5D9C5] hover:border-[#B88E52] hover:shadow-md'
-            }`}
-          >
-            <input
-              ref={fileInputRef}
-              type="file"
-              multiple
-              accept="image/png,image/jpeg,image/webp,application/pdf"
-              onChange={(e) => handleFileChange(e.target.files)}
-              className="hidden"
-            />
-
-            <div className="w-10 h-10 rounded-xl bg-[#B88E52]/10 text-[#B88E52] flex items-center justify-center mx-auto mb-2.5">
-              <Upload className="w-5 h-5" />
-            </div>
-
-            <h2 className="font-serif font-bold text-lg sm:text-xl text-[#1F2B38] tracking-wide">
-              {dragOver ? 'DROP TO UPLOAD' : 'Drop file or click to browse'}
-            </h2>
-            <p className="text-xs text-[#718096] mt-1 font-medium">
-              Upload your 2D floor plan drawing or PDF brochure
-            </p>
-            <p className="text-[11px] text-[#A0AEC0] mt-1 font-semibold tracking-wider">
-              PNG · JPG · JPEG · WEBP · PDF
-            </p>
-
-            {/* Dominant Primary CTA Button (Width 240px, Height 48px - Never stretch to 100%!) */}
-            <div className="mt-4">
-              <button
-                type="button"
-                className="w-[240px] h-12 bg-[#B88E52] hover:bg-[#A37B43] text-white rounded-xl text-xs font-bold uppercase tracking-widest transition shadow-md flex items-center justify-center mx-auto"
-              >
-                CHOOSE FLOOR PLAN
-              </button>
-            </div>
-
-            <p className="text-[11px] text-[#A0AEC0] italic mt-2.5 font-medium">
-              Single floor apartments or multi-floor duplex plans supported
-            </p>
-          </div>
-
-          {/* Sample Link */}
-          <div className="flex items-center gap-2 text-xs">
-            <span className="text-[#718096] font-medium">Want to try a pre-loaded sample?</span>
-            <button
-              type="button"
-              onClick={handleSampleClick}
-              className="text-[#B88E52] hover:underline font-bold inline-flex items-center gap-1"
-            >
-              <span>View sample (Brigade Insignia 5 BHK)</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
+      {/* Top Hero Layout: Centered Title + Dropzone */}
+      <div className="max-w-3xl mx-auto flex flex-col justify-between space-y-6 text-center">
+        <div className="space-y-3">
+          <h1 className="font-serif font-extrabold text-3xl sm:text-4xl lg:text-[42px] leading-[1.15] text-[#1F2B38] tracking-tight">
+            TURN YOUR FLOOR PLAN <br />
+            <span className="text-[#B88E52]">INTO A 3D HOME</span>
+          </h1>
+          <p className="text-sm sm:text-base text-[#718096] font-normal max-w-xl mx-auto leading-relaxed">
+            Create a presentation-ready conceptual 3D visual from your residential floor plan.
+          </p>
         </div>
 
-        {/* Right Column: Before / After Architectural Visual (5 cols ~42%) */}
-        <div className="lg:col-span-5 bg-white border border-[#E5D9C5] rounded-2xl p-6 shadow-sm flex flex-col justify-between space-y-6">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between border-b border-[#E5D9C5] pb-3">
-              <span className="text-xs font-bold text-[#1F2B38] uppercase tracking-wider">
-                Architectural Transformation
-              </span>
-              <span className="text-[10px] font-bold text-[#B88E52] bg-[#B88E52]/10 px-2.5 py-0.5 rounded-full border border-[#B88E52]/30">
-                100% TOPOLOGY MATCH
-              </span>
-            </div>
+        {/* Premium Upload Dropzone Card */}
+        <div
+          onDragOver={(e) => {
+            e.preventDefault();
+            setDragOver(true);
+          }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={handleDrop}
+          onClick={() => fileInputRef.current?.click()}
+          className={`bg-[#FAF8F5] border-2 rounded-2xl p-8 sm:p-10 text-center cursor-pointer transition-all shadow-sm ${
+            dragOver
+              ? 'border-[#B88E52] bg-[#B88E52]/10 scale-[1.01]'
+              : 'border-[#E5D9C5] hover:border-[#B88E52] hover:shadow-md'
+          }`}
+        >
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            accept="image/png,image/jpeg,image/webp,application/pdf"
+            onChange={(e) => handleFileChange(e.target.files)}
+            className="hidden"
+          />
 
-            {/* Crisp Before/After SVG Diagram (No blank boxes!) */}
-            <div className="grid grid-cols-2 gap-4 items-center">
-              {/* Left: 2D Floor Plan Graphic */}
-              <div className="space-y-2 text-center">
-                <span className="text-[10px] font-bold tracking-wider text-[#718096] uppercase block">
-                  ORIGINAL 2D PLAN
-                </span>
-                <div className="bg-[#FAF8F5] border border-[#E2DCD2] rounded-xl p-3 aspect-square flex flex-col items-center justify-center shadow-inner relative overflow-hidden">
-                  <svg viewBox="0 0 100 100" className="w-full h-full text-[#1F2B38]">
-                    <rect x="5" y="5" width="90" height="90" fill="#FFF" stroke="#1F2B38" strokeWidth="2.5" />
-                    <line x1="5" y1="45" x2="95" y2="45" stroke="#1F2B38" strokeWidth="2" />
-                    <line x1="45" y1="5" x2="45" y2="95" stroke="#1F2B38" strokeWidth="2" />
-                    <rect x="10" y="10" width="30" height="30" fill="#F7F3EC" stroke="#8C7A6B" strokeWidth="1" />
-                    <text x="25" y="28" fontSize="8" fontWeight="bold" textAnchor="middle" fill="#1F2B38">BR1</text>
-                    <rect x="50" y="10" width="40" height="30" fill="#F7F3EC" stroke="#8C7A6B" strokeWidth="1" />
-                    <text x="70" y="28" fontSize="8" fontWeight="bold" textAnchor="middle" fill="#1F2B38">LIV</text>
-                    <rect x="10" y="50" width="30" height="40" fill="#F7F3EC" stroke="#8C7A6B" strokeWidth="1" />
-                    <text x="25" y="73" fontSize="8" fontWeight="bold" textAnchor="middle" fill="#1F2B38">KIT</text>
-                  </svg>
-                  <span className="text-[9px] font-bold text-[#718096] mt-1">2D Architectural Drawing</span>
-                </div>
-              </div>
-
-              {/* Right: 3D Visual Render Graphic */}
-              <div className="space-y-2 text-center relative">
-                <div className="absolute -left-4 top-1/2 -translate-y-1/2 z-10 text-[#B88E52] font-bold text-base">
-                  →
-                </div>
-                <span className="text-[10px] font-bold tracking-wider text-[#B88E52] uppercase block">
-                  3D VISUALIZATION
-                </span>
-                <div className="bg-[#1F2B38] border border-[#B88E52] rounded-xl p-3 aspect-square flex flex-col items-center justify-center shadow-md relative overflow-hidden">
-                  <svg viewBox="0 0 100 100" className="w-full h-full">
-                    <polygon points="50,15 90,35 50,55 10,35" fill="#B88E52" fillOpacity="0.3" stroke="#B88E52" strokeWidth="2" />
-                    <polygon points="10,35 50,55 50,90 10,70" fill="#141D26" stroke="#B88E52" strokeWidth="2" />
-                    <polygon points="50,55 90,35 90,70 50,90" fill="#1F2B38" stroke="#B88E52" strokeWidth="2" />
-                    <text x="50" y="40" fontSize="7" fontWeight="bold" textAnchor="middle" fill="#F7F3EC">3D Dollhouse</text>
-                  </svg>
-                  <span className="text-[9px] font-bold text-[#D4AF77] mt-1">Furnished Isometric Cutaway</span>
-                </div>
-              </div>
-            </div>
+          <div className="w-12 h-12 rounded-xl bg-[#B88E52]/10 text-[#B88E52] flex items-center justify-center mx-auto mb-3">
+            <Upload className="w-6 h-6" />
           </div>
 
-          <div className="text-center space-y-0.5 border-t border-[#E5D9C5] pt-3.5 w-full">
-            <p className="font-serif font-bold text-xs text-[#1F2B38]">
-              From floor plan to presentation-ready 3D.
-            </p>
-            <p className="text-[10px] font-bold tracking-widest text-[#B88E52] uppercase">
-              SAME SPACE. A CLEARER STORY.
-            </p>
+          <h2 className="font-serif font-bold text-xl sm:text-2xl text-[#1F2B38] tracking-wide">
+            {dragOver ? 'DROP TO UPLOAD' : 'Drop file or click to browse'}
+          </h2>
+          <p className="text-xs sm:text-sm text-[#718096] mt-1 font-medium">
+            Upload your 2D floor plan drawing or PDF brochure
+          </p>
+          <p className="text-[11px] text-[#A0AEC0] mt-1.5 font-semibold tracking-wider">
+            PNG · JPG · JPEG · WEBP · PDF
+          </p>
+
+          {/* Dominant Primary CTA Button (Width 240px, Height 48px - Fixed non-stretching!) */}
+          <div className="mt-5">
+            <button
+              type="button"
+              className="w-[240px] h-12 bg-[#B88E52] hover:bg-[#A37B43] text-white rounded-xl text-xs font-bold uppercase tracking-widest transition shadow-md flex items-center justify-center mx-auto"
+            >
+              CHOOSE FLOOR PLAN
+            </button>
           </div>
+
+          <p className="text-[11px] text-[#A0AEC0] italic mt-3 font-medium">
+            Single floor apartments or multi-floor duplex plans supported
+          </p>
+        </div>
+
+        {/* Sample Link */}
+        <div className="flex items-center justify-center gap-2 text-xs pt-1">
+          <span className="text-[#718096] font-medium">Want to try a pre-loaded sample?</span>
+          <button
+            type="button"
+            onClick={handleSampleClick}
+            className="text-[#B88E52] hover:underline font-bold inline-flex items-center gap-1"
+          >
+            <span>View sample (Brigade Insignia 5 BHK)</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
         </div>
       </div>
 
