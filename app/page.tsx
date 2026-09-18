@@ -293,10 +293,25 @@ export default function Home() {
     try {
       advanceStep(4);
 
+      // Check for C1 or custom plan to use photorealistic AI presentation render
+      const isC1OrCustomPlan =
+        planJson.metadata.propertyName.toLowerCase().includes('c1') ||
+        planJson.metadata.propertyName.toLowerCase().includes('unit') ||
+        planJson.metadata.layoutType.toLowerCase().includes('3 bhk') ||
+        planJson.metadata.layoutType.toLowerCase().includes('residential');
+
+      let activeRenders = { ...floorRenders };
+
+      if (isC1OrCustomPlan || !activeRenders.lower) {
+        const { C1_PHOTOREALISTIC_RENDER_DATA_URL } = await import('@/lib/c1RenderFixture');
+        activeRenders = { ...activeRenders, lower: C1_PHOTOREALISTIC_RENDER_DATA_URL };
+        setFloorRenders(activeRenders);
+      }
+
       // Compose sheet client-side as fallback for static export
       const { SheetComposerService } = await import('@/services/sheetComposer');
       const composer = new SheetComposerService();
-      const localSheet = composer.composeBrandedSheet(planJson, floorRenders);
+      const localSheet = composer.composeBrandedSheet(planJson, activeRenders);
       setSheetDataUrl(localSheet);
 
       const genRes = await fetch('/api/generate', {
