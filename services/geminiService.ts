@@ -64,7 +64,7 @@ Return ONLY the raw JSON object, without markdown formatting or code fences.
 `;
 
     try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${this.apiKey}`;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${this.apiKey}`;
 
       const response = await fetch(url, {
         method: 'POST',
